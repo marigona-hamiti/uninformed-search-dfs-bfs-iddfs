@@ -80,7 +80,26 @@ Extra stress-test puzzles (`very_hard`, `escargot`; known to be hard for brute f
 | very_hard | 64 | 3 723 | 150 | ~0.09 s |
 | escargot | 58 | 2 425 | 96 | ~0.03 s |
 
-All solutions are verified automatically (`is_valid_solution`). With MRV the queue stays small, so BFS has no memory problem here. Without MRV (e.g. expanding the first empty cell) the queue is expected to grow much faster, but this was not measured.
+All solutions are verified automatically (`is_valid_solution`).
+
+**Effect of MRV (measured, `solve_bfs(puzzle, use_mrv=False)` expands the first empty cell instead, node limit 300 000).**
+
+| Level | Nodes with MRV | Max queue with MRV | Nodes without MRV | Max queue without MRV |
+|-------|----------------|--------------------|-------------------|-----------------------|
+| easy | 52 | 1 | 4 632 | 738 |
+| medium | 46 | 1 | 69 | 5 |
+| hard | 206 | 9 | 22 919 | 3 616 |
+| very_hard | 3 723 | 150 | not solved (limit reached) | 137 964 |
+| escargot | 2 425 | 96 | 18 885 | 1 716 |
+
+Without MRV BFS expands up to ~100× more nodes and the queue grows to thousands (and on `very_hard` to over 100 000 boards before the limit stops it), which is the memory weakness of BFS. With MRV the queue stays small, so BFS has no memory problem on these puzzles.
+
+## Running the tests and the demo
+
+```bash
+python run_all.py                        # runs all three solvers (quick demo)
+python -m unittest discover -s tests -v  # 13 unit tests
+```
 
 ---
 
