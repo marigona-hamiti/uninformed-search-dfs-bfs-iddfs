@@ -1,100 +1,100 @@
 # Uninformed Search: DFS, BFS, IDDFS
 
-Detyra e parë semestrale – **Inteligjenca Artificiale 2026/27 (FIEK)**.
+Semester Assignment 1 – **Artificial Intelligence 2026/27 (FIEK)**.
 
-Probleme të zgjidhura me kërkim pa informacion shtesë (uninformed search) dhe backtracking.
+Problems solved with uninformed search and backtracking.
 
-| # | Problemi | Algoritmi | Kodi |
-|---|----------|-----------|------|
+| # | Problem | Algorithm | Code |
+|---|---------|-----------|------|
 | 1 | Social Golfers | DFS + backtracking | [social_golfers/social_golfers_dfs.py](social_golfers/social_golfers_dfs.py) |
 | 2 | Sudoku Solver (Easy, Medium, Hard) | BFS + backtracking | [sudoku/sudoku_bfs.py](sudoku/sudoku_bfs.py) |
 | 3 | Latin Square | IDDFS + backtracking | [latin_square/latin_square_iddfs.py](latin_square/latin_square_iddfs.py) |
-| 4 | Pemët e kërkimit: 8-Puzzle, Missionaries & Cannibals, Rotating Workforce Scheduling | – | [search_trees/search_trees.md](search_trees/search_trees.md) |
+| 4 | Search trees: 8-Puzzle, Missionaries & Cannibals, Rotating Workforce Scheduling | – | [search_trees/search_trees.md](search_trees/search_trees.md) |
 
-Kërkohet vetëm Python 3 (pa librari të jashtme).
+Only Python 3 is required (no external libraries).
 
 ```bash
 python latin_square/latin_square_iddfs.py 5
-python sudoku/sudoku_bfs.py            # ose: sudoku_bfs.py easy
-python social_golfers/social_golfers_dfs.py            # të gjitha rastet
-python social_golfers/social_golfers_dfs.py 8 4 5 30   # g p javë kufiri_kohor_në_sekonda
+python sudoku/sudoku_bfs.py                              # or: sudoku_bfs.py easy
+python social_golfers/social_golfers_dfs.py              # all cases
+python social_golfers/social_golfers_dfs.py 8 4 5 30     # groups players weeks time_limit_seconds
 ```
 
 ---
 
 ## 1. Social Golfers (DFS)
 
-**Problemi.** `n = g·p` golfistë luajnë çdo javë në `g` grupe me `p` lojtarë. Dy golfistë nuk lejohen të jenë në të njëjtin grup më shumë se një herë. Sa javë maksimale mund të luhet për `g = 8, p = 4` (32 golfistë)?
+**Problem.** `n = g·p` golfers play every week in `g` groups of `p` players. Two golfers may not be in the same group more than once. What is the maximum number of weeks for `g = 8, p = 4` (32 golfers)?
 
-**Modelimi.**
-- Variabla: grupi i secilit golfist në secilën javë; çdo javë është ndarje e golfistëve në `g` grupe me `p` anëtarë.
-- Kufizime: (C1) çdo grup ka saktësisht `p` golfistë, çdo golfist luan një herë në javë; (C2) çdo çift takohet më së shumti një herë.
-- Gjendja: grupet e caktuara deri tani. Veprimi: shtohet një grup i ri. Qëllimi: `w` javë të planifikuara.
+**Modeling.**
+- Variables: the group of each golfer in each week; every week is a partition of the golfers into `g` groups of `p` members.
+- Constraints: (C1) every group has exactly `p` golfers and every golfer plays once a week; (C2) every pair of golfers meets at most once.
+- State: the groups assigned so far. Action: add a new group. Goal: `w` weeks scheduled.
 
-**Funksioni objektiv.** `f = Σ_{çift {a,b}} max(0, takime(a,b) − 1)`, pra numri i takimeve të përsëritura; qëllimi është `f = 0`. Backtracking nuk e zgjeron kurrë një gjendje me `f > 0`.
+**Objective function.** `f = Σ over pairs {a,b} of max(0, meetings(a,b) − 1)`, i.e. the number of repeated meetings; the goal is `f = 0`. Backtracking never extends a state with `f > 0`.
 
-**Hapësira e kërkimit.** Ndarjet e `n` golfistëve në `g` grupe me `p`: `n! / ((p!)^g · g!)`. Për `g=8, p=4` kjo është ≈ 1.1·10²⁴ për javë, pra ≈ (1.1·10²⁴)^w plane për `w` javë.
+**Search space.** Partitions of `n` golfers into `g` groups of `p`: `n! / ((p!)^g · g!)`. For `g=8, p=4` this is ≈ 1.1·10²⁴ per week, so ≈ (1.1·10²⁴)^w schedules for `w` weeks.
 
-**Thyerja e simetrisë.** Java 1 fiksohet (`{0..3}, {4..7}, ...`), dhe çdo grup fillon me golfistin më të vogël të papërdorur, anëtarët shtohen në rend rritës. Kjo heq degët ekuivalente por e lë DFS-në të plotë.
+**Symmetry breaking.** Week 1 is fixed (`{0..3}, {4..7}, ...`), and every group starts with the smallest golfer not yet placed, with members added in increasing order. This removes equivalent branches and keeps the DFS complete.
 
-**DFS.** Thellësia = (javë, grup, anëtar). Çdo kandidat që ka takuar tashmë një anëtar të grupit prehet menjëherë.
+**DFS.** Depth = (week, group, member). A candidate that has already met a member of the group is pruned immediately.
 
-**Rezultatet (të matura).**
+**Results (measured).**
 
-| Rasti | Rezultati |
-|-------|-----------|
-| 9 golfistë (3×3), 4 javë | zgjidhet (37 nyje); 5 javë: DFS e shteron hapësirën, **nuk ka zgjidhje** |
-| 16 golfistë (4×4), 5 javë | zgjidhet (80 nyje) |
-| 15 golfistë (5×3, Kirkman), 7 javë | **nuk gjendet** brenda 30 s (16 mln nyje); thellësia maksimale: 6 javë (7 javë ekzistojnë) |
-| 32 golfistë (8×4), 5 javë | zgjidhet menjëherë (160 nyje) |
-| 32 golfistë (8×4), 6–10 javë, renditje fikse | **nuk gjendet** brenda 40 s (8–20 milionë nyje); thellësia maksimale e arritur: 5 javë |
-| 32 golfistë (8×4), 7 javë, renditje e rastësishme + rinisje (`run_restarts`) | zgjidhet në rinisjen e parë, ~0.2 s |
-| 32 golfistë (8×4), 8 javë, renditje e rastësishme + rinisje | **nuk gjendet** në 60 s (~100 rinisje me 200 000 nyje) |
+| Case | Result |
+|------|--------|
+| 9 golfers (3×3), 4 weeks | solved (37 nodes); 5 weeks: DFS exhausts the space, **no solution exists** |
+| 16 golfers (4×4), 5 weeks | solved (80 nodes) |
+| 15 golfers (5×3, Kirkman), 7 weeks | **not found** within 30 s (16 M nodes); deepest reached: 6 weeks (7 weeks exist) |
+| 32 golfers (8×4), 5 weeks | solved immediately (160 nodes) |
+| 32 golfers (8×4), 6–10 weeks, fixed order | **not found** within 40 s (8–20 M nodes); deepest reached: 5 weeks |
+| 32 golfers (8×4), 7 weeks, random order + restarts (`run_restarts`) | solved in the first restart, ~0.2 s |
+| 32 golfers (8×4), 8 weeks, random order + restarts | **not found** in 60 s (~100 restarts of 200 000 nodes) |
 
-**Vëzhgim.** DFS-ja me renditje fikse arrin 5 javë për 32 golfistë dhe pastaj ngec: bën backtracking në javët e fundit pa e ndryshuar javën 2–3 që e bën problemin të pazgjidhshëm. Kur kandidatët provohen në renditje të rastësishme dhe kërkimi niset përsëri pas një buxheti nyjesh (rinisje), arrihen 7 javë. Algoritmi mbetet DFS + backtracking; ndryshon vetëm rendi i provës. Optimumi i njohur nga literatura është **10 javë**; arrihet me metoda algjebrike ose me kërkim lokal/metaheuristika (temat 5–6 të lëndës), jo me DFS të verbër. Ky është kufizimi kryesor i DFS në hapësira shumë të mëdha.
+**Observation.** DFS with a fixed order reaches 5 weeks for 32 golfers and then gets stuck: it backtracks through the last weeks without changing weeks 2–3, which are what make the problem unsolvable. When candidates are tried in random order and the search restarts after a node budget, 7 weeks are reached. The algorithm is still DFS + backtracking; only the order of trial changes. The best known value in the literature is **10 weeks**, reached with algebraic constructions or local search / metaheuristics (topics 5–6 of the course), not with blind DFS. This is the main limitation of DFS in very large search spaces.
 
-**Rasti i përgjithshëm `n = g × p`, `w` javë.** Kufiri i sipërm: një golfist takon `w·(p−1)` të tjerë, pra `w ≤ (n−1)/(p−1)`. Për 32 golfistë, `p=4`: `w ≤ 31/3`, pra `w ≤ 10`, dhe 10 arrihet. Për 9 golfistë, `p=3`: `w ≤ 4`, që përputhet me rezultatin e DFS.
+**General case `n = g × p`, `w` weeks.** Upper bound: a golfer meets `w·(p−1)` others, so `w ≤ (n−1)/(p−1)`. For 32 golfers with `p=4`: `w ≤ 31/3`, so `w ≤ 10`. For 9 golfers with `p=3`: `w ≤ 4`, which matches the DFS result.
 
 ---
 
 ## 2. Sudoku (BFS)
 
-**Modelimi.** 81 variabla (qelizat), domen `{1..9}`, kufizime: vlera të ndryshme në çdo rresht, kolonë dhe kuti 3×3. Gjendja: tabelë e pjesshme; veprimi: një qelizë e zbrazët merr një vlerë të ligjshme; qëllimi: asnjë qelizë e zbrazët.
+**Modeling.** 81 variables (the cells), domain `{1..9}`, constraints: different values in every row, column and 3×3 box. State: a partial board; action: an empty cell receives a legal value; goal: no empty cells.
 
-**Funksioni objektiv.** `f = numri i qelizave të zbrazëta` (qëllimi 0), me kufizimin e ngurtë që asnjë rresht/kolonë/kuti nuk ka dublikat. Vlerat e palejuara nuk vendosen kurrë (backtracking).
+**Objective function.** `f = number of empty cells` (goal 0), with the hard constraint that no row/column/box contains a duplicate. Illegal values are never placed (backtracking).
 
-**Hapësira e kërkimit.** `9^e`, ku `e` = numri i qelizave të zbrazëta.
+**Search space.** `9^e`, where `e` is the number of empty cells.
 
-**BFS.** Radha FIFO mban të gjitha tabelat e pjesshme të nivelit aktual; zgjerohet një nivel i plotë para se të shkohet më thellë. Qeliza që zgjerohet është ajo me më pak vlera të ligjshme (MRV); nëse nuk ka vlerë të ligjshme, nyja hidhet (backtracking).
+**BFS.** A FIFO queue holds all partial boards of the current level; a whole level is expanded before going deeper. The expanded cell is the one with the fewest legal values (MRV); if a cell has no legal value the node is dropped (backtracking).
 
-| Niveli | Qeliza të zbrazëta | Hapësira `9^e` | Nyje të zgjeruara | Madhësia max e radhës | Koha |
-|--------|-------------------|----------------|-------------------|-----------------------|------|
+| Level | Empty cells | Space `9^e` | Nodes expanded | Max queue size | Time |
+|-------|-------------|-------------|----------------|----------------|------|
 | Easy | 51 | 4.6·10⁴⁸ | 52 | 1 | ~0.001 s |
 | Medium | 45 | 8.7·10⁴² | 46 | 1 | <0.001 s |
 | Hard | 53 | 3.8·10⁵⁰ | 206 | 9 | ~0.003 s |
 
-Puzzle-t shtesë për provë stresi (`very_hard`, `escargot`; të njohura si të vështira për brute force):
+Extra stress-test puzzles (`very_hard`, `escargot`; known to be hard for brute force):
 
-| Niveli | Qeliza të zbrazëta | Nyje të zgjeruara | Madhësia max e radhës | Koha |
-|--------|-------------------|-------------------|-----------------------|------|
+| Level | Empty cells | Nodes expanded | Max queue size | Time |
+|-------|-------------|----------------|----------------|------|
 | very_hard | 64 | 3 723 | 150 | ~0.09 s |
 | escargot | 58 | 2 425 | 96 | ~0.03 s |
 
-Të gjitha zgjidhjet verifikohen automatikisht (`is_valid_solution`). Me MRV radha mbetet e vogël, prandaj BFS nuk ka problem memorieje këtu. Pa MRV (p.sh. duke zgjeruar qelizën e parë të zbrazët) radha pritet të rritet shumë më shpejt, por këtë nuk e kam matur.
+All solutions are verified automatically (`is_valid_solution`). With MRV the queue stays small, so BFS has no memory problem here. Without MRV (e.g. expanding the first empty cell) the queue is expected to grow much faster, but this was not measured.
 
 ---
 
 ## 3. Latin Square (IDDFS)
 
-**Modelimi.** `n×n` qeliza, domen `{1..n}`, kufizime: vlerat në çdo rresht dhe kolonë janë të ndryshme. Qelizat plotësohen rresht pas rreshti; thellësia = numri i qelizave të plotësuara.
+**Modeling.** `n×n` cells, domain `{1..n}`, constraints: the values in every row and column are different. Cells are filled row by row; depth = number of filled cells.
 
-**Funksioni objektiv.** `f = dublikatet në rreshta + dublikatet në kolona`; qëllimi `f = 0`.
+**Objective function.** `f = duplicates in rows + duplicates in columns`; goal `f = 0`.
 
-**Hapësira e kërkimit.** `n^(n²)` tabela (5²⁵ ≈ 3·10¹⁷ për `n=5`); vetëm 161 280 janë katrorë latinë të vlefshëm për `n=5`.
+**Search space.** `n^(n²)` grids (5²⁵ ≈ 3·10¹⁷ for `n=5`); only 161 280 of them are valid Latin squares for `n=5`.
 
-**IDDFS.** DFS me kufi thellësie 1, 2, 3, … deri te `n²`. Zgjidhja është në thellësinë `n²`, ndaj iteracioni i fundit e gjen.
+**IDDFS.** DFS with depth limit 1, 2, 3, … up to `n²`. The solution is at depth `n²`, so the last iteration finds it.
 
-Rezultati për `n = 5` (i matur): iteracionet me kufi < 25 e shterojnë hapësirën pa zgjidhje; me kufirin 25 zgjidhja gjendet pas 38 nyjesh. Gjithsej 13 505 922 nyje, ~7.5 s.
+Result for `n = 5` (measured): iterations with a limit < 25 exhaust the space without a solution; with limit 25 the solution is found after 38 nodes. In total 13 505 922 nodes, ~7.5 s.
 
 ```
 1 2 3 4 5
@@ -106,20 +106,20 @@ Rezultati për `n = 5` (i matur): iteracionet me kufi < 25 e shterojnë hapësir
 
 ---
 
-## 4. Krahasimi i algoritmeve
+## 4. Algorithm comparison
 
-Me `b` = faktori i degëzimit, `d` = thellësia e zgjidhjes, `m` = thellësia maksimale.
+With `b` = branching factor, `d` = solution depth, `m` = maximum depth.
 
-| Algoritmi | Kompletë | Optimal | Koha | Memoria |
-|-----------|----------|---------|------|---------|
-| DFS | jo (në pemë pa fund) | jo | O(b^m) | **O(b·m)** |
-| BFS | po | po (kosto njësi) | O(b^d) | O(b^d) |
-| IDDFS | po | po (kosto njësi) | O(b^d) | **O(b·d)** |
+| Algorithm | Complete | Optimal | Time | Memory |
+|-----------|----------|---------|------|--------|
+| DFS | no (in infinite trees) | no | O(b^m) | **O(b·m)** |
+| BFS | yes | yes (unit cost) | O(b^d) | O(b^d) |
+| IDDFS | yes | yes (unit cost) | O(b^d) | **O(b·d)** |
 
-- **DFS**: memorie e vogël, përshtatet kur zgjidhja është në thellësi të njohur (Social Golfers), por mund të humbasë në degë të këqija.
-- **BFS**: gjen zgjidhjen më të cekët, por kërkon memorie shumë të madhe; për Sudoku funksionon sepse MRV e mban radhën të vogël.
-- **IDDFS**: memoria e DFS me plotësinë e BFS; kostoja është rinisja e niveleve të sipërme (te Latin Square ~13.5 mln nyje në total).
+- **DFS**: small memory; suits problems whose solution depth is known (Social Golfers), but can get lost in bad branches.
+- **BFS**: finds the shallowest solution but needs a lot of memory; works for Sudoku because MRV keeps the queue small.
+- **IDDFS**: the memory of DFS with the completeness of BFS; the cost is re-visiting the upper levels (about 13.5 M nodes in total for the Latin Square).
 
-## 5. Pemët e kërkimit
+## 5. Search trees
 
-Shih [search_trees/search_trees.md](search_trees/search_trees.md): 8-Puzzle, Missionaries & Cannibals dhe Rotating Workforce Scheduling.
+See [search_trees/search_trees.md](search_trees/search_trees.md): 8-Puzzle, Missionaries & Cannibals and Rotating Workforce Scheduling.
