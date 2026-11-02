@@ -44,6 +44,13 @@ class SudokuTests(unittest.TestCase):
             if given != "0":
                 self.assertEqual(int(given), solved)
 
+    def test_bfs_without_mrv_still_solves_easy_but_expands_more_nodes(self):
+        with_mrv, stats_mrv = sd.solve_bfs(sd.PUZZLES["easy"])
+        without_mrv, stats_plain = sd.solve_bfs(sd.PUZZLES["easy"], use_mrv=False)
+        self.assertTrue(sd.is_valid_solution(without_mrv))
+        self.assertEqual(with_mrv, without_mrv)  # the solution is unique
+        self.assertGreater(stats_plain["nodes"], stats_mrv["nodes"])
+
     def test_unsolvable_puzzle_returns_none(self):
         # row 0 holds 1..8 and a 9 sits below its last cell, so cell (0, 8) has no legal value
         puzzle = "12345678" + "0" + "00000000" + "9" + "0" * 63

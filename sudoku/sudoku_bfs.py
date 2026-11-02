@@ -130,8 +130,20 @@ def is_valid_solution(board):
     return rows and cols and boxes
 
 
-def solve_bfs(puzzle, max_nodes=5_000_000):
-    """BFS over partial boards. Returns (solution or None, stats dict)."""
+def first_empty_cell(board):
+    """Return (index, candidates) of the first empty cell (no MRV heuristic)."""
+    for idx, v in enumerate(board):
+        if not v:
+            return idx, candidates(board, idx // 9, idx % 9)
+    return None, None
+
+
+def solve_bfs(puzzle, max_nodes=5_000_000, use_mrv=True):
+    """BFS over partial boards. Returns (solution or None, stats dict).
+
+    use_mrv=False expands the first empty cell instead of the most constrained
+    one, which makes the BFS queue grow much faster (see the README)."""
+    choose_cell = most_constrained_cell if use_mrv else first_empty_cell
     start = [int(ch) for ch in puzzle]
     queue = deque([start])
     nodes = 0
@@ -141,7 +153,7 @@ def solve_bfs(puzzle, max_nodes=5_000_000):
         nodes += 1
         if nodes > max_nodes:
             return None, {"nodes": nodes, "max_queue": max_queue, "aborted": True}
-        idx, cands = most_constrained_cell(board)
+        idx, cands = choose_cell(board)
         if idx is None:  # goal: board is complete
             return board, {"nodes": nodes, "max_queue": max_queue, "aborted": False}
         for v in cands:  # empty list -> dead end -> backtrack (node is dropped)
